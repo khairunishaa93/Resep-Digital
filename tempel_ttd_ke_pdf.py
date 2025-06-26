@@ -1,28 +1,40 @@
+import streamlit as st
 import fitz  # PyMuPDF
 from PIL import Image
+import io
 
-def tempel_ttd_ke_pdf(pdf_path, ttd_path, output_path, posisi=(595, 456), ukuran=(100, 50)):
-    # Buka file PDF
-    pdf = fitz.open(pdf_path)
-    page = pdf[0]  # halaman pertama
+st.set_page_config(page_title="Debug Tempel TTD", layout="centered")
+st.title("🧪 Debug Posisi Tanda Tangan")
 
-    # Buka gambar tanda tangan
-    ttd_img = Image.open(ttd_path)
-    ttd_img = ttd_img.resize(ukuran)  # resize agar tidak menutupi kolom lain
+pdf_file = st.file_uploader("📄 Upload Resep (PDF)", type=["pdf"])
+ttd_file = st.file_uploader("✍️ Upload Tanda Tangan (PNG)", type=["png"])
 
-    # Simpan ke sementara (karena fitz butuh path file)
-    ttd_temp_path = "temp_ttd.png"
-    ttd_img.save(ttd_temp_path)
+if pdf_file and ttd_file:
+    x = st.slider("📍 Geser Horizontal (X)", 0, 595, 395)
+    y = st.slider("📍 Geser Vertikal (Y)", 0, 842, 750)
 
-    # Hitung posisi berdasarkan koordinat kiri atas (x, y)
-    x, y = posisi
-    width, height = ukuran
-    rect = fitz.Rect(x, y, x + width, y + height)
+    if st.button("🔧 Tempel & Lihat PDF"):
+        pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
+        page = pdf[0]
 
-    # Sisipkan gambar ke halaman
-    page.insert_image(rect, filename=ttd_temp_path)
+        ttd_img = Image.open(ttd_file).convert("RGBA")
+        st.image(ttd_img, caption="🖼️ Preview Tanda Tangan", width=200)
 
-    # Simpan file hasil
-    pdf.save(output_path)
-    pdf.close()
-    print(f"Tanda tangan berhasil ditempel ke: {output_path}")
+        buffer = io.BytesIO()
+        ttd_img.save(buffer, format="PNG")
+
+        # Tempel tanda tangan sesuai slider
+        rect = fitz.Rect(x, y, x + 200, y + 80)
+        page.insert_image(rect, stream=buffer.getvalue())
+
+        output = io.BytesIO()
+        pdf.save(output)
+        pdf.close()
+
+        st.success("✅ PDF berhasil dibuat dengan posisi kustom.")
+        st.download_button(
+            label="📥 Unduh PDF",
+            data=output.getvalue(),
+            file_name="resep_debug.pdf",
+            mime="application/pdf"
+        )
