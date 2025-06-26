@@ -3,41 +3,41 @@ import fitz  # PyMuPDF
 from PIL import Image
 import io
 
-st.set_page_config(page_title="Tempel TTD Pasien ke PDF", layout="centered")
-st.title("🩺📄 Tempel Tanda Tangan Pasien ke Resep PDF")
+st.set_page_config(page_title="Tempel TTD ke Resep", layout="centered")
+st.title("📄✍️ Tempel Tanda Tangan ke Resep PDF")
 
-# Upload file resep PDF dan tanda tangan PNG
+# Upload file PDF dan tanda tangan PNG
 pdf_file = st.file_uploader("📄 Upload File Resep (PDF)", type=["pdf"])
 ttd_file = st.file_uploader("✍️ Upload Tanda Tangan Pasien (PNG)", type=["png"])
 
 if pdf_file and ttd_file:
-    if st.button("🖨️ Tempel & Unduh PDF"):
-        # Buka PDF
+    if st.button("🔧 Tempel & Unduh PDF"):
+        # Buka PDF dan ambil halaman pertama
         pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
-        page = pdf[0]  # asumsinya resep hanya 1 halaman
+        page = pdf[0]  # resep hanya 1 halaman
 
-        # Buka gambar tanda tangan
+        # Buka tanda tangan PNG
         ttd_img = Image.open(ttd_file).convert("RGBA")
-        img_buffer = io.BytesIO()
-        ttd_img.save(img_buffer, format="PNG")
+        buffer = io.BytesIO()
+        ttd_img.save(buffer, format="PNG")
 
-        # Posisi tanda tangan (pojok kanan bawah)
-        # Koordinat dalam satuan point (A4 = 595x842)
-        posisi = fitz.Rect(450, 770, 570, 810)  # sesuaikan jika perlu
+        # Sesuaikan posisi tempel (pojok kanan bawah kolom “PENERIMA OBAT”)
+        # Ukuran tanda tangan 200 x 80 px, posisi kanan bawah A4
+        rect = fitz.Rect(395, 740, 595, 820)  # (x1, y1, x2, y2)
 
-        # Tempelkan gambar ke PDF
-        page.insert_image(posisi, stream=img_buffer.getvalue())
+        # Tempel gambar ke PDF
+        page.insert_image(rect, stream=buffer.getvalue())
 
-        # Simpan PDF ke memori
+        # Simpan hasil ke output
         output = io.BytesIO()
         pdf.save(output)
         pdf.close()
 
-        # Tampilkan tombol download
-        st.success("✅ Tanda tangan berhasil ditempel ke resep.")
+        # Unduh hasil
+        st.success("✅ Tanda tangan berhasil ditempel.")
         st.download_button(
-            label="📥 Unduh PDF Final",
+            label="📥 Unduh PDF Bertanda Tangan",
             data=output.getvalue(),
-            file_name="resep_berttd.pdf",
+            file_name="resep_dengan_ttd.pdf",
             mime="application/pdf"
         )
