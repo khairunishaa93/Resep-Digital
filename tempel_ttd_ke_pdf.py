@@ -6,38 +6,35 @@ import io
 st.set_page_config(page_title="Tempel TTD ke Resep", layout="centered")
 st.title("📄✍️ Tempel Tanda Tangan ke Resep PDF")
 
-# Upload file PDF dan tanda tangan PNG
 pdf_file = st.file_uploader("📄 Upload File Resep (PDF)", type=["pdf"])
 ttd_file = st.file_uploader("✍️ Upload Tanda Tangan Pasien (PNG)", type=["png"])
 
 if pdf_file and ttd_file:
     if st.button("🔧 Tempel & Unduh PDF"):
-        # Buka PDF dan ambil halaman pertama
         pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
-        page = pdf[0]  # resep hanya 1 halaman
+        page = pdf[0]
 
-        # Buka tanda tangan PNG
+        st.write("🧭 Ukuran halaman PDF:", page.rect)
+
         ttd_img = Image.open(ttd_file).convert("RGBA")
+        st.image(ttd_img, caption="Preview Tanda Tangan", width=200)
+
         buffer = io.BytesIO()
         ttd_img.save(buffer, format="PNG")
 
-        # Sesuaikan posisi tempel (pojok kanan bawah kolom “PENERIMA OBAT”)
-        # Ukuran tanda tangan 200 x 80 px, posisi kanan bawah A4
-        rect = fitz.Rect(395, 740, 595, 820)  # (x1, y1, x2, y2)
+        # Debug: Coba tempel di tengah halaman dulu
+        rect = fitz.Rect(195, 400, 395, 480)  # Tengah halaman
 
-        # Tempel gambar ke PDF
         page.insert_image(rect, stream=buffer.getvalue())
 
-        # Simpan hasil ke output
         output = io.BytesIO()
         pdf.save(output)
         pdf.close()
 
-        # Unduh hasil
-        st.success("✅ Tanda tangan berhasil ditempel.")
+        st.success("✅ Tanda tangan berhasil ditempel (sementara di tengah halaman).")
         st.download_button(
-            label="📥 Unduh PDF Bertanda Tangan",
+            label="📥 Unduh PDF",
             data=output.getvalue(),
-            file_name="resep_dengan_ttd.pdf",
+            file_name="resep_debug.pdf",
             mime="application/pdf"
         )
