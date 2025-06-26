@@ -23,7 +23,7 @@ if pdf_file and ttd_file:
         ttd_img.save(buffer, format="PNG")
 
         # Debug: Coba tempel di tengah halaman dulu
-        rect = fitz.Rect(195, 400, 395, 480)  # Tengah halaman
+        rect = fitz.Rect(395, 750, 595, 830)  # Tengah halaman
 
         page.insert_image(rect, stream=buffer.getvalue())
 
