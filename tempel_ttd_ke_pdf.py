@@ -10,9 +10,9 @@ pdf_file = st.file_uploader("📄 Upload Resep (PDF)", type=["pdf"])
 ttd_file = st.file_uploader("✍️ Upload Tanda Tangan (PNG)", type=["png"])
 
 # Posisi final hasil slider kemarin
-final_x = 880
-final_y = 1120
-ttd_width = 130
+final_x = 600
+final_y = 1070
+ttd_width = 100
 ttd_height = 50
 
 if pdf_file and ttd_file:
