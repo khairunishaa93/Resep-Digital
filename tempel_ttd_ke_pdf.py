@@ -12,14 +12,14 @@ pdf_files = st.file_uploader("📄 Upload File Resep (PDF)", type=["pdf"], accep
 ttd_files = st.file_uploader("✍️ Upload Tanda Tangan Pasien (PNG)", type=["png"], accept_multiple_files=True)
 
 # Koordinat titik pojok kiri atas tanda tangan
-x_default = 655
+x_default = 736
 y_default = 456
 x = st.number_input("📍 Posisi X (horizontal)", value=x_default)
 y = st.number_input("📍 Posisi Y (vertikal)", value=y_default)
 
-# Ukuran tanda tangan (dalam piksel PDF)
-width = st.number_input("📏 Lebar Tanda Tangan (px)", value=150)
-height = st.number_input("📐 Tinggi Tanda Tangan (px)", value=60)
+# Ukuran tanda tangan tetap
+width = 75
+height = 46
 
 if st.button("🚀 Proses dan Gabungkan"):
     if not pdf_files or not ttd_files:
@@ -33,13 +33,13 @@ if st.button("🚀 Proses dan Gabungkan"):
             if nama in ttd_map:
                 st.write(f"🛠️ Memproses: `{pdf_file.name}` + `{nama}.png`")
 
-                # Buka PDF dan tanda tangan
+                # Buka PDF dan halaman pertama
                 pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
                 page = pdf[0]
 
-                # Baca dan resize gambar tanda tangan
+                # Baca dan resize tanda tangan
                 ttd_img = Image.open(ttd_map[nama]).convert("RGBA")
-                resized_ttd = ttd_img.resize((width, height))  # resize ke ukuran yang diinginkan
+                resized_ttd = ttd_img.resize((width, height))
 
                 buffer = io.BytesIO()
                 resized_ttd.save(buffer, format="PNG")
@@ -48,7 +48,7 @@ if st.button("🚀 Proses dan Gabungkan"):
                 rect = fitz.Rect(x, y, x + width, y + height)
                 page.insert_image(rect, stream=buffer.getvalue())
 
-                # Simpan hasil ke memory
+                # Simpan hasil PDF ke memori
                 output = io.BytesIO()
                 pdf.save(output)
                 pdf.close()
