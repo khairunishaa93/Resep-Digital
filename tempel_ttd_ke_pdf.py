@@ -4,37 +4,45 @@ from PIL import Image
 import io
 
 st.set_page_config(page_title="Debug Tempel TTD", layout="centered")
-st.title("🧪 Debug Posisi Tanda Tangan")
+st.title("🧪 Debug Tempel TTD ke Resep")
 
 pdf_file = st.file_uploader("📄 Upload Resep (PDF)", type=["pdf"])
 ttd_file = st.file_uploader("✍️ Upload Tanda Tangan (PNG)", type=["png"])
 
-if pdf_file and ttd_file:
-    x = st.slider("📍 Geser Horizontal (X)", 0, 595, 395)
-    y = st.slider("📍 Geser Vertikal (Y)", 0, 842, 750)
+# Posisi final hasil slider kemarin
+final_x = 880
+final_y = 1120
+ttd_width = 130
+ttd_height = 50
 
-    if st.button("🔧 Tempel & Lihat PDF"):
+if pdf_file and ttd_file:
+    st.markdown("📌 Posisi tanda tangan otomatis ke kolom **PENERIMA OBAT** (kanan bawah).")
+
+    if st.button("📌 Tempel & Lihat Hasil"):
+        # Buka file PDF dan ambil halaman pertama
         pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
         page = pdf[0]
 
+        # Buka tanda tangan dan simpan ke buffer
         ttd_img = Image.open(ttd_file).convert("RGBA")
         st.image(ttd_img, caption="🖼️ Preview Tanda Tangan", width=200)
 
         buffer = io.BytesIO()
         ttd_img.save(buffer, format="PNG")
 
-        # Tempel tanda tangan sesuai slider
-        rect = fitz.Rect(x, y, x + 200, y + 80)
+        # Tempel tanda tangan ke posisi akhir yang pas
+        rect = fitz.Rect(final_x, final_y, final_x + ttd_width, final_y + ttd_height)
         page.insert_image(rect, stream=buffer.getvalue())
 
+        # Simpan hasil ke output
         output = io.BytesIO()
         pdf.save(output)
         pdf.close()
 
-        st.success("✅ PDF berhasil dibuat dengan posisi kustom.")
+        st.success("✅ PDF berhasil dibuat dan tanda tangan sudah pas.")
         st.download_button(
             label="📥 Unduh PDF",
             data=output.getvalue(),
-            file_name="resep_debug.pdf",
+            file_name="resep_ttd_final.pdf",
             mime="application/pdf"
         )
