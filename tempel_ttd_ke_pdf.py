@@ -12,8 +12,8 @@ pdf_files = st.file_uploader("📄 Upload File Resep (PDF)", type=["pdf"], accep
 ttd_files = st.file_uploader("✍️ Upload Tanda Tangan Pasien (PNG)", type=["png"], accept_multiple_files=True)
 
 # Koordinat titik pojok kiri atas tanda tangan
-x_default = 880
-y_default = 1120
+x_default = 595
+y_default = 456
 x = st.number_input("📍 Posisi X (horizontal)", value=x_default)
 y = st.number_input("📍 Posisi Y (vertikal)", value=y_default)
 
